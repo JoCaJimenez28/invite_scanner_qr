@@ -32,11 +32,11 @@ class _HomePageState extends State<HomePage> {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                // ignore: prefer_const_constructors
-                MaterialPageRoute(builder: (context) => AddEventPage()),
-              );
+              // Navigator.push(
+              //   context,
+              //   // ignore: prefer_const_constructors
+              //   //MaterialPageRoute(builder: (context) => AddEventPage(onAddEvent: (Map<String, dynamic> ) {  },)),
+              // );
             },
             child: const Text('Añadir Evento'),
           ),
