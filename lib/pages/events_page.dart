@@ -268,6 +268,7 @@
 // }
 
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:invite_scanner_qr/pages/scan_event_page.dart';
 import 'package:invite_scanner_qr/pages/view_event_page.dart';
 import 'add_event_page.dart';
@@ -287,13 +288,18 @@ class _EventsPageState extends State<EventsPage> {
   @override
   void initState() {
     super.initState();
-    filteredEvents = events;
+    _fetchEvents(); // Obtiene los eventos al iniciar la página
   }
 
-  void _addNewEvent(Map<String, dynamic> newEvent) {
+  Future<void> _fetchEvents() async {
+    final QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('events').get();
+
     setState(() {
-      events.add(newEvent);
-      _filterEvents();
+      events = snapshot.docs
+          .map((doc) => {...doc.data() as Map<String, dynamic>, 'id': doc.id})
+          .toList();
+      _filterEvents(); // Filtra los eventos después de obtenerlos
     });
   }
 
@@ -308,6 +314,20 @@ class _EventsPageState extends State<EventsPage> {
             .toList();
       }
     });
+  }
+
+  Future<void> _addNewEvent() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AddEventPage(),
+      ),
+    );
+
+    // Comprueba si se ha agregado un nuevo evento
+    if (result == true) {
+      await _fetchEvents(); // Actualiza la lista de eventos
+    }
   }
 
   void _showOptions(BuildContext context, Map<String, dynamic> event) {
@@ -326,7 +346,7 @@ class _EventsPageState extends State<EventsPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ViewEventPage(event: event),
+                      builder: (context) => ViewEventPage(eventId: event['id']),
                     ),
                   );
                 },
@@ -374,11 +394,12 @@ class _EventsPageState extends State<EventsPage> {
               child: const Text('Cancelar'),
             ),
             TextButton(
-              onPressed: () {
-                setState(() {
-                  events.remove(event);
-                  _filterEvents();
-                });
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('events')
+                    .doc(event['id'])
+                    .delete();
+                await _fetchEvents(); // Actualiza la lista después de eliminar
                 Navigator.of(context).pop();
               },
               child: const Text('Eliminar'),
@@ -421,17 +442,10 @@ class _EventsPageState extends State<EventsPage> {
               },
             )
           : const Center(
-              child: Text('No hay eventos disponibles.'),
+              child: Text("cargando.."),
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddEventPage(onAddEvent: _addNewEvent),
-            ),
-          );
-        },
+        onPressed: _addNewEvent,
         child: const Icon(Icons.add),
       ),
     );
@@ -510,3 +524,4 @@ class EventSearchDelegate extends SearchDelegate {
     );
   }
 }
+

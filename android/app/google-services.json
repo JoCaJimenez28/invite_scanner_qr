@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "41164106215",
+    "project_id": "invite-qr-scanner",
+    "storage_bucket": "invite-qr-scanner.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:41164106215:android:cd2e19115c513368ae3542",
+        "android_client_info": {
+          "package_name": "com.example.invite_qr_scanner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuhcPxs5rj3H6DSr4ONaI1JHD7CBruLxE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:41164106215:android:50cd27d8c5a8f642ae3542",
+        "android_client_info": {
+          "package_name": "com.example.invite_scanner_qr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuhcPxs5rj3H6DSr4ONaI1JHD7CBruLxE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
