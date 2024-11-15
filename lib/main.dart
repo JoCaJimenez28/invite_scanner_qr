@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:invite_scanner_qr/pages/home_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MainApp());
 }
 
@@ -19,7 +22,7 @@ class MainApp extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Invite App'),
         ),
-        body: const HomePage(), // Carga HomePage en el cuerpo de Scaffold
+        body: const HomePage(),
       ),
     );
   }

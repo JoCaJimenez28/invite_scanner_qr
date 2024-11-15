@@ -94,6 +94,7 @@
 // }
 
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:intl/intl.dart';
 
@@ -110,6 +111,7 @@ class _ScanEventPageState extends State<ScanEventPage> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? controller;
   String? qrText;
+  bool _isProcessing = false; // Variable para evitar múltiples escaneos
 
   @override
   void reassemble() {
@@ -123,47 +125,53 @@ class _ScanEventPageState extends State<ScanEventPage> {
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        qrText = scanData.code;
-      });
-      _processScanResult(scanData.code);
+      if (!_isProcessing) {
+        setState(() {
+          qrText = scanData.code;
+          _isProcessing = true; // Marcamos que estamos procesando
+        });
+        controller.pauseCamera(); // Pausa el escáner
+        _processScanResult(scanData.code);
+      }
     });
   }
 
-  void _processScanResult(String? result) {
-    if (result != null) {
-      final Map<String, dynamic>? scannedGuest = _findGuestInEvent(result);
-      String timeScanned = DateFormat('HH:mm').format(DateTime.now()).toString();
-      controller?.pauseCamera();
-      
+  Future<void> _processScanResult(String? guestId) async {
+    if (guestId != null) {
+      try {
+        final querySnapshot = await FirebaseFirestore.instance
+            .collection('events')
+            .doc(widget.event['id'])
+            .collection('guests')
+            .where('guestId', isEqualTo: guestId)
+            .get();
 
-      if (scannedGuest != null) {
-        setState(() {
-          scannedGuest['scanned'] = true;
-          scannedGuest['timeScanned'] = timeScanned;
-        });
-        _showScanResultDialog(
-          title: 'Invitado encontrado',
-          content: 'Nombre: ${scannedGuest['name']}\nHora de escaneo: $timeScanned\nEstado: Escaneado',
-        );
-      } else {
-        _showScanResultDialog(
-          title: 'Invitado no encontrado',
-          content: 'El código QR pertenece a otro evento o es inválido.',
-        );
+        if (querySnapshot.docs.isNotEmpty) {
+          final guestDoc = querySnapshot.docs.first;
+          String timeScanned = DateFormat('HH:mm').format(DateTime.now());
+
+          await guestDoc.reference.update({
+            'scanned': true,
+            'timeScanned': timeScanned,
+          });
+
+          _showScanResultDialog(
+            title: 'Invitado encontrado',
+            content:
+                'Nombre: ${guestDoc['name']}\nHora de escaneo: $timeScanned\nEstado: Escaneado',
+          );
+        } else {
+          _showScanResultDialog(
+            title: 'Invitado no encontrado',
+            content: 'El código QR pertenece a otro evento o es inválido.',
+          );
+        }
+      } catch (e) {
+        print("Error al procesar el resultado del escaneo: $e");
+      } finally {
+        _isProcessing = false; // Restablecemos el estado después de procesar
       }
     }
-  }
-
-  Map<String, dynamic>? _findGuestInEvent(String guestId) {
-    // Busca el invitado en el evento actual usando el ID del QR
-    print("event " + widget.event.toString());
-    var guest = widget.event['guests']?.firstWhere(
-      (guest) => guest['name'] == guestId,
-      orElse: () => <String, dynamic>{},
-    );
-
-    return guest.isNotEmpty ? guest : null;
   }
 
   void _showScanResultDialog({required String title, required String content}) {
@@ -177,7 +185,7 @@ class _ScanEventPageState extends State<ScanEventPage> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                controller?.resumeCamera();
+                controller?.resumeCamera(); // Reanuda el escáner al cerrar el diálogo
               },
               child: const Text('Aceptar'),
             ),
@@ -212,7 +220,7 @@ class _ScanEventPageState extends State<ScanEventPage> {
             flex: 1,
             child: Center(
               child: (qrText != null)
-                  ? Text('Resultado: $qrText["name"]')
+                  ? Text('Resultado: $qrText')
                   : const Text('Escanea un código QR'),
             ),
           ),
@@ -221,3 +229,4 @@ class _ScanEventPageState extends State<ScanEventPage> {
     );
   }
 }
+
