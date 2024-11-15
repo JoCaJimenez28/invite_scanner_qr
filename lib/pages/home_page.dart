@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:invite_scanner_qr/pages/add_event_page.dart';
+// import 'package:invite_scanner_qr/pages/add_event_page.dart';
 import 'package:invite_scanner_qr/pages/events_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -20,7 +20,7 @@ class _HomePageState extends State<HomePage> {
             'Elige una opción',
             style: TextStyle(fontSize: 24),
           ),
-          const SizedBox(height: 20), // Espacio entre el texto y los botones
+          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
               Navigator.push(
@@ -30,19 +30,18 @@ class _HomePageState extends State<HomePage> {
             },
             child: const Text('Eventos'),
           ),
+          // ElevatedButton(
+          //   onPressed: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(builder: (context) => AddEventPage()),
+          //     );
+          //   },
+          //   child: const Text('Añadir Evento'),
+          // ),
           ElevatedButton(
             onPressed: () {
-              // Navigator.push(
-              //   context,
-              //   // ignore: prefer_const_constructors
-              //   //MaterialPageRoute(builder: (context) => AddEventPage(onAddEvent: (Map<String, dynamic> ) {  },)),
-              // );
-            },
-            child: const Text('Añadir Evento'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Lógica para el tercer botón
+              // Acción del botón "Opción 3"
             },
             child: const Text('Opción 3'),
           ),
